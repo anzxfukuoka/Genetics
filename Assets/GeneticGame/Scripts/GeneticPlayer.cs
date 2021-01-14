@@ -2,112 +2,70 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GeneticPlayer : MonoBehaviour
+
+namespace GeneticGame 
 {
-    protected bool alive = true;
-
-    protected float score = 0;
-
-    public Dictionary<string, float> sensors = new Dictionary<string, float>();
-    public Gens gens = new Gens();
-
-    private void Start()
+    public abstract class GeneticPlayer : MonoBehaviour
     {
-        
-    }
+        public bool alive = true;
+        public float score = 0;
 
-    private void Update()
-    {
-        
-    }
+        [SerializeField]
+        protected Sensors sensors = new Sensors();
+        [SerializeField]
+        protected Genom genom = new Genom();
 
-    protected void Die()
-    {
-        alive = false;
-    }
 
-    protected virtual void UpdateSensors() 
-    {
-
-    }
-
-    protected virtual void ProcessData() 
-    {
-
-    }
-    
-}
-
-[System.Serializable]
-public class Gens 
-{
-    public Dictionary<string, Gen> genom = new Dictionary<string, Gen>();
-
-    public Gens() { }
-
-    public Gens(Dictionary<string, Gen> genom) 
-    {
-        this.genom = genom;
-    }
-
-    public void AddGen(string name, Gen gen) 
-    {
-        genom.Add(name, gen);
-    }
-
-    public Gen GetGen(string name) 
-    {
-        return genom["name"];
-    }
-
-    public void RandomizeAll() 
-    {
-        foreach (var item in genom)
+        public void SetGenom(Genom Genom)
         {
-            Gen g = item.Value;
-            g.Randomize();
-        }
-    }
-
-    //
-
-    public static Gens MutateAll(Gens parent,  float f) 
-    {
-        Dictionary<string, Gen> newGenom = new Dictionary<string, Gen>(parent.genom);
-
-        foreach (var item in newGenom)
-        {
-            Gen g = item.Value;
-            g.Mutate(f);
+            this.genom = Genom;
         }
 
-        return new Gens(newGenom);
-    }
+        public Genom GetGenom()
+        {
+            return this.genom;
+        }
 
-    public static 
-}
 
-[System.Serializable]
-public class Gen 
-{
-    private float maxVal;
-    private float minVal;
+        private void Start()
+        {
+            //sensors = InitSensors();
+            //Debug.Log("ApplyGenom");
+            ApplyGenom(genom);
+        }
 
-    public float value;
+        private void Update()
+        {
+            if (!alive)
+                return;
 
-    public Gen(float maxVal = 1, float minVal = 0) 
-    {
-        this.maxVal = maxVal;
-        this.minVal = minVal;
-    }
+            //UpdateSensors(sensors);
+            score += ProcessStep(sensors, genom);
 
-    public void Randomize() 
-    {
-        value = Random.Range(maxVal, minVal);
-    }
+            alive = IsAlive();
 
-    public void Mutate(float f) 
-    {
-        value += f;
+            if (!alive)
+                Die();
+        }
+
+        public abstract Genom InitGenom();
+
+        //public abstract Sensors InitSensors();
+
+        protected abstract void ApplyGenom(Genom genom);
+
+        //protected abstract void UpdateSensors(Sensors sensors);
+
+        //врозващает очки, заработанные за шаг
+        protected abstract float ProcessStep(Sensors sensors, Genom genom);
+
+        protected abstract bool IsAlive();
+
+        protected void Die() 
+        {
+            Debug.Log(gameObject.name + "died\nscore: " + score);
+            GeneticGame.DecreaseAliveCount();
+        }
+
     }
 }
