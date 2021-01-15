@@ -141,7 +141,7 @@ namespace GeneticGame
             return childs;
         }
 
-        public static List<Genom> GetChilds(List<Genom> parents, int childsCount, bool save_best = false)
+        public static List<Genom> GetChilds(List<Genom> parents, int childsCount, bool save_best = false /* только для parents.Count > 1 */)
         {
             List<Genom> childs = new List<Genom>();
 
@@ -159,8 +159,8 @@ namespace GeneticGame
             }
             else if (parents.Count == 1)
             {
-                //возвращает стандартные (10%) мутации от parents[0];
-                childs = GetChilds(parents[0], childsCount, 0.1f);
+                //возвращает стандартные (4%) мутации от parents[0];
+                childs = GetChilds(parents[0], childsCount, 0.04f);
             }
             else if (parents.Count > 1) 
             {

@@ -6,11 +6,16 @@ using GeneticGame;
 
 public class SizedMonocycleGeneticPlayer : GeneticPlayer
 {
+    public float deathTimeOut = 60f; // 1 min
+    private float _t = 0;
+
     private static float randomForceDelay = 1f;
+
+    private float maxDegreeXLeft;
+    private float maxDegreeXRight;
 
     private float forcePowerLeft;
     private float forcePowerRight;
-    private float maxDegreeX;
 
     private float wheelRadius;
 
@@ -22,23 +27,28 @@ public class SizedMonocycleGeneticPlayer : GeneticPlayer
 
     private Material forcePointMat;
 
+    private Vector3 lastPos;
+
     public override GeneticGame.Genom InitGenom()
     {
         GeneticGame.Genom genom = new GeneticGame.Genom();
 
-        genom.AddGen(new Gen("max_degree_x", 0, 180));
+        genom.AddGen(new Gen("max_degree_x_left", 180, 0));
+        genom.AddGen(new Gen("max_degree_x_right", 180 ,0));
         //genom.AddGen(new Gen("force_power", 1000, 1));
         genom.AddGen(new Gen("force_power_left", 1000, 1));
         genom.AddGen(new Gen("force_power_right", 1000, 1));
         
-        genom.AddGen(new Gen("wheel_radius", 0.1f, 4));
+        genom.AddGen(new Gen("wheel_radius", 2, 0.6f));
 
         return genom;
     }
 
     protected override void ApplyGenom(GeneticGame.Genom genom)
     {
-        maxDegreeX = genom.GetGen("max_degree_x").value;
+        maxDegreeXLeft = genom.GetGen("max_degree_x_left").value;
+        maxDegreeXRight = genom.GetGen("max_degree_x_right").value;
+
         forcePowerLeft = genom.GetGen("force_power_left").value;
         forcePowerRight = genom.GetGen("force_power_right").value;
 
@@ -71,7 +81,9 @@ public class SizedMonocycleGeneticPlayer : GeneticPlayer
 
     protected override bool IsAlive()
     {
-        return !onGround;
+        _t += Time.deltaTime;
+
+        return !onGround && _t < deathTimeOut;
     }
 
     void OnCollisionEnter(Collision collision)
@@ -84,18 +96,14 @@ public class SizedMonocycleGeneticPlayer : GeneticPlayer
             //death
             onGround = true;
         }
+        
     }
 
 
     protected override float ProcessStep(Sensors sensors, GeneticGame.Genom genom)
     {
-        float scoreForStep = Time.deltaTime;
-
+        //
         forcePointMat.SetColor("_EmissionColor", Color.cyan);
-
-        //Debug.LogError(genes.valuableDegree + " " + info.rotationX);
-
-        //Debug.LogError(info.rotationX);
 
         float degreeX;
 
@@ -105,22 +113,34 @@ public class SizedMonocycleGeneticPlayer : GeneticPlayer
             degreeX = transform.rotation.eulerAngles.x - 360;
 
 
-        if (-maxDegreeX > degreeX && degreeX < 0)
+        Vector3 localForward = transform.worldToLocalMatrix.MultiplyVector(transform.forward);
+        Vector3 backForward = transform.worldToLocalMatrix.MultiplyVector(-transform.forward);
+
+
+        if (-maxDegreeXLeft > degreeX && degreeX < 0)
         {
-            rig.AddForceAtPosition(Vector3.forward * forcePowerLeft, forcePoint.position);
+            rig.AddForceAtPosition(localForward * forcePowerLeft, forcePoint.position);
 
             forcePointMat.SetColor("_EmissionColor", Color.magenta);
 
             //Debug.LogError("a");
         }
-        if (maxDegreeX < degreeX && degreeX > 0)
+        if (maxDegreeXRight < degreeX && degreeX > 0)
         {
-            rig.AddForceAtPosition(Vector3.back * forcePowerRight, forcePoint.position);
+            rig.AddForceAtPosition(backForward * forcePowerRight, forcePoint.position);
 
             forcePointMat.SetColor("_EmissionColor", Color.yellow);
 
             //Debug.LogError("b");
         }
+
+        // define score
+        float meters =  lastPos.z - transform.position.z;
+
+        float scoreForStep = meters / Time.deltaTime;
+
+        lastPos = transform.position;
+
 
         return scoreForStep;
     }

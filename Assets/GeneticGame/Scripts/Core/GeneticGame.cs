@@ -8,14 +8,22 @@ namespace GeneticGame
     {
         private static GeneticGame instance;
 
+        [Space(10)]
+
         public int populationCount = 4;
         public int maxGenerations = 100;
 
+        [Space(10)]
+
         public GeneticPlayer geneticPlayerPrefab;
+
+        [Space(10)]
 
         public Transform startSpawnPoint;
 
         public float spawnDistance = 6f; // растояния между особями при спавне
+
+        [Space(10)]
 
         private int aliveCount;
 
@@ -137,12 +145,27 @@ namespace GeneticGame
 
                 Debug.Log("global best score: " + bestScore);
 
+                /*
+                 * передавая отсортированный список генов всех особей можно всегда надеятся, 
+                 * что гены лучшей особи передадутся самому большому кол-ву детей. 
+                 * но если разнится между 1 и 2 коосальная, есть ли смысл оставлять гены второго в популяции?
+                 * (возможно, стоит переделать сам алгорим скрещевания)
+                 * ((но делать я этого, конечно же, не буду))
+                 */
+
                 List<Genom> populationGenom = new List<Genom>();
 
                 foreach (GeneticPlayer p in population) 
                 {
-                    populationGenom.Add(p.GetGenom());
+                    // коосальная разница = 50%
+                    if (p.score > best.score * 0.5f)
+                        populationGenom.Add(p.GetGenom());
                 }
+
+                /*
+                 * в список генов родителей 100% попадет хотя бы 1 ген - лучший.
+                 * если попадет только он - поколение сгенерируется на основе полных случайных мутаций лучшего
+                 */
 
                 GenerateNextPopulation(populationGenom);
 
@@ -155,7 +178,7 @@ namespace GeneticGame
             GUI.Box(new Rect(20, 20, 200, 60), "");
 
             GUI.Label(new Rect(40, 30, 200, 20), "generation: " + generation);
-            GUI.Label(new Rect(40, 50, 200, 20), "best time: " + bestScore);
+            GUI.Label(new Rect(40, 50, 200, 20), "best score: " + bestScore);
 
         }
     }
