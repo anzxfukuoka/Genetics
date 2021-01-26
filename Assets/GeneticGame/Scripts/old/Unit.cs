@@ -2,191 +2,194 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Unit : MonoBehaviour
+namespace old 
 {
-    private static float maxForce = 10000f;
-    private static float randomForceDelay = 1f;
-
-    public UnitInfo unitInfo = new UnitInfo();
-    public Genom genes;
-
-    private Transform forcePoint;
-    private CapsuleCollider heartJar;
-
-    private Rigidbody rig;
-
-    private float time; // время жизни юнита
-
-    private Material forcePointMat;
-
-    public static Genom GemerateRandomGenes() 
+    public class Unit : MonoBehaviour
     {
-        Genom genes = new Genom();
-        genes.forcePower = Random.Range(0, maxForce);
-        genes.valuableDegree = Random.rotation.eulerAngles.x/2;
-        return genes;
-    }
+        private static float maxForce = 10000f;
+        private static float randomForceDelay = 1f;
 
-    public void InitGenes(Genom genom)
-    {
-        this.genes = genom;
-    }
+        public UnitInfo unitInfo = new UnitInfo();
+        public Genom genes;
 
-    public void InitGenes()
-    {
-        InitGenes(GemerateRandomGenes());
-    }
+        private Transform forcePoint;
+        private CapsuleCollider heartJar;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        rig = GetComponent<Rigidbody>();
-        
-        forcePoint = transform.Find("ForcePoint");
-        heartJar = GetComponent<CapsuleCollider>();
+        private Rigidbody rig;
 
-        forcePointMat = forcePoint.gameObject.GetComponent<Renderer>().material;
+        private float time; // время жизни юнита
 
-        StartCoroutine(AddRandomForce(genes.forcePower));
-    }
+        private Material forcePointMat;
 
-    private IEnumerator AddRandomForce(float max)
-    {
-        while (true)
+        public static Genom GemerateRandomGenes()
         {
-            float power = Random.Range(-max, max) * 0.1f;
-            rig.AddForceAtPosition(Vector3.forward * power, forcePoint.position);
-
-            yield return new WaitForSeconds(randomForceDelay);
+            Genom genes = new Genom();
+            genes.forcePower = Random.Range(0, maxForce);
+            genes.valuableDegree = Random.rotation.eulerAngles.x / 2;
+            return genes;
         }
-    }
 
-    public void UpdateUnitInfo()
-    {
-        if (unitInfo.alive)
+        public void InitGenes(Genom genom)
         {
-            if(transform.rotation.eulerAngles.x <= 180)
-                unitInfo.rotationX = transform.rotation.eulerAngles.x;
-            else
-                unitInfo.rotationX = transform.rotation.eulerAngles.x - 360;
+            this.genes = genom;
         }
-    }
 
-    public void GeneticInput(Genom genes, UnitInfo info) 
-    {
-        forcePointMat.SetColor("_EmissionColor", Color.cyan);
-
-        if (!unitInfo.alive)
-            return;
-
-        //Debug.LogError(genes.valuableDegree + " " + info.rotationX);
-
-        //Debug.LogError(info.rotationX);
-
-        if (-genes.valuableDegree > info.rotationX && info.rotationX < 0) 
+        public void InitGenes()
         {
-            rig.AddForceAtPosition(Vector3.forward * genes.forcePower, forcePoint.position);
-            forcePointMat.SetColor("_EmissionColor", Color.magenta);
-
-            //Debug.LogError("a");
+            InitGenes(GemerateRandomGenes());
         }
-        if (genes.valuableDegree < info.rotationX && info.rotationX > 0)
-        {
-            rig.AddForceAtPosition(Vector3.back * genes.forcePower, forcePoint.position);
-            forcePointMat.SetColor("_EmissionColor", Color.yellow);
 
-            //Debug.LogError("b");
+        // Start is called before the first frame update
+        void Start()
+        {
+            rig = GetComponent<Rigidbody>();
+
+            forcePoint = transform.Find("ForcePoint");
+            heartJar = GetComponent<CapsuleCollider>();
+
+            forcePointMat = forcePoint.gameObject.GetComponent<Renderer>().material;
+
+            StartCoroutine(AddRandomForce(genes.forcePower));
         }
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        time += Time.deltaTime;
-
-        UpdateUnitInfo();
-
-        GeneticInput(genes, unitInfo);
-    }
-
-    void OnCollisionEnter(Collision collision)
-    {
-        if (!unitInfo.alive)
-            return;
-
-        if (collision.gameObject.tag == "GROUND") 
+        private IEnumerator AddRandomForce(float max)
         {
-            //death
-            unitInfo.alive = false;
-            unitInfo.finalScore = time;
-
-            //Debug.Log("Unit " + gameObject.name + "died" + "\nscore: " + unitInfo.finalScore);
-
-            GameG.DecreaseAliveCount();
-        }
-    }
-
-    public static List<Genom> GetChildsGenoms(Genom parent1, Genom parent2, float populationCount)
-    {
-        List<Genom> childs = new List<Genom>();
-
-        //Debug.LogError("p1 " + parent1.forcePower + " " + parent1.valuableDegree);
-        //Debug.LogError("p2 " + parent2.forcePower + " " + parent2.valuableDegree);
-
-        //Debug.LogError("c:");
-
-        childs.Add(parent1);
-        childs.Add(parent2);
-
-        for (int i = 0; i < populationCount - 2; i++)
-        {
-            Genom childGenom = GemerateRandomGenes();
-
-            if (i % 2 == 0) 
+            while (true)
             {
-                if (Random.value > 0.5)
-                {
-                    childGenom.forcePower = parent1.forcePower;
-                }
-                else 
-                {
-                    childGenom.valuableDegree = parent1.valuableDegree;
-                }
+                float power = Random.Range(-max, max) * 0.1f;
+                rig.AddForceAtPosition(Vector3.forward * power, forcePoint.position);
+
+                yield return new WaitForSeconds(randomForceDelay);
             }
+        }
 
-            if (i % 4 == 0)
+        public void UpdateUnitInfo()
+        {
+            if (unitInfo.alive)
             {
-                if (Random.value < 0.5)
-                {
-                    childGenom.forcePower = parent2.forcePower;
-                }
+                if (transform.rotation.eulerAngles.x <= 180)
+                    unitInfo.rotationX = transform.rotation.eulerAngles.x;
                 else
-                {
-                    childGenom.valuableDegree = parent2.valuableDegree;
-                }
+                    unitInfo.rotationX = transform.rotation.eulerAngles.x - 360;
             }
-
-            //Debug.LogError("c" + i + " " + childGenom.forcePower + " " + childGenom.valuableDegree);
-
-            childs.Add(childGenom);
         }
 
-        return childs;
+        public void GeneticInput(Genom genes, UnitInfo info)
+        {
+            forcePointMat.SetColor("_EmissionColor", Color.cyan);
+
+            if (!unitInfo.alive)
+                return;
+
+            //Debug.LogError(genes.valuableDegree + " " + info.rotationX);
+
+            //Debug.LogError(info.rotationX);
+
+            if (-genes.valuableDegree > info.rotationX && info.rotationX < 0)
+            {
+                rig.AddForceAtPosition(Vector3.forward * genes.forcePower, forcePoint.position);
+                forcePointMat.SetColor("_EmissionColor", Color.magenta);
+
+                //Debug.LogError("a");
+            }
+            if (genes.valuableDegree < info.rotationX && info.rotationX > 0)
+            {
+                rig.AddForceAtPosition(Vector3.back * genes.forcePower, forcePoint.position);
+                forcePointMat.SetColor("_EmissionColor", Color.yellow);
+
+                //Debug.LogError("b");
+            }
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+            time += Time.deltaTime;
+
+            UpdateUnitInfo();
+
+            GeneticInput(genes, unitInfo);
+        }
+
+        void OnCollisionEnter(Collision collision)
+        {
+            if (!unitInfo.alive)
+                return;
+
+            if (collision.gameObject.tag == "GROUND")
+            {
+                //death
+                unitInfo.alive = false;
+                unitInfo.finalScore = time;
+
+                //Debug.Log("Unit " + gameObject.name + "died" + "\nscore: " + unitInfo.finalScore);
+
+                GameG.DecreaseAliveCount();
+            }
+        }
+
+        public static List<Genom> GetChildsGenoms(Genom parent1, Genom parent2, float populationCount)
+        {
+            List<Genom> childs = new List<Genom>();
+
+            //Debug.LogError("p1 " + parent1.forcePower + " " + parent1.valuableDegree);
+            //Debug.LogError("p2 " + parent2.forcePower + " " + parent2.valuableDegree);
+
+            //Debug.LogError("c:");
+
+            childs.Add(parent1);
+            childs.Add(parent2);
+
+            for (int i = 0; i < populationCount - 2; i++)
+            {
+                Genom childGenom = GemerateRandomGenes();
+
+                if (i % 2 == 0)
+                {
+                    if (Random.value > 0.5)
+                    {
+                        childGenom.forcePower = parent1.forcePower;
+                    }
+                    else
+                    {
+                        childGenom.valuableDegree = parent1.valuableDegree;
+                    }
+                }
+
+                if (i % 4 == 0)
+                {
+                    if (Random.value < 0.5)
+                    {
+                        childGenom.forcePower = parent2.forcePower;
+                    }
+                    else
+                    {
+                        childGenom.valuableDegree = parent2.valuableDegree;
+                    }
+                }
+
+                //Debug.LogError("c" + i + " " + childGenom.forcePower + " " + childGenom.valuableDegree);
+
+                childs.Add(childGenom);
+            }
+
+            return childs;
+        }
     }
-}
 
-public class UnitInfo 
-{
-    public float finalScore;
-    public bool alive = true;
+    public class UnitInfo
+    {
+        public float finalScore;
+        public bool alive = true;
 
-    public float rotationX;
-}
+        public float rotationX;
+    }
 
-[System.Serializable]
-public class Genom 
-{
-    public float forcePower;
-    public float valuableDegree;
+    [System.Serializable]
+    public class Genom
+    {
+        public float forcePower;
+        public float valuableDegree;
 
+    }
 }

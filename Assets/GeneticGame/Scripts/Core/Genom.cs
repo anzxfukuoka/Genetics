@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -9,7 +10,8 @@ namespace GeneticGame
     public class Genom
     {
         [SerializeField]
-        private List<Gen> gens_list = new List<Gen>(); // нужно для отображения генов в инспекторе
+        private List<Gen> gens_list = new List<Gen>(); // нужно для отображения генов в инспекторе и сериализации
+        [System.NonSerialized]
         private Dictionary<string, Gen> gens_dict = new Dictionary<string, Gen>(); //для поиска гена по имени
 
         public Genom() { }
@@ -55,6 +57,43 @@ namespace GeneticGame
         {
             string name = GetGenNameFromIndex(index);
             return gens_dict[name];
+        }
+
+        public static Genom LoadFromFile(string path) 
+        {
+            string json = "";
+
+            if (File.Exists(path))
+            {
+                json = File.ReadAllText(path);
+            }
+            else 
+            {
+                Debug.LogError("path: " + path + "\nfile not exists.");
+            }
+
+            Genom loaded = JsonUtility.FromJson<Genom>(json);
+
+            foreach(Gen gen in loaded.gens_list) 
+            {
+                loaded.gens_dict.Add(gen.name, gen);
+            }
+
+            return loaded;
+        }
+
+        public static void SaveToFile(Genom genom, string path) 
+        {
+            string json = JsonUtility.ToJson(genom);
+
+            string directoryName = Path.GetDirectoryName(path);
+
+            if (!Directory.Exists(directoryName)) 
+            {
+                Directory.CreateDirectory(directoryName);
+            }
+
+            File.WriteAllText(path, json);
         }
 
         public void UpdateGenValue(string name, float value)
@@ -221,6 +260,7 @@ namespace GeneticGame
 
             return childs;
         }
+
     }
 
     [System.Serializable]
@@ -228,8 +268,10 @@ namespace GeneticGame
     {
         public string name;
 
-        public float maxVal { get; private set; }
-        public float minVal { get; private set; }
+        [HideInInspector]
+        public float maxVal;
+        [HideInInspector]
+        public float minVal;
 
         public float value;
 

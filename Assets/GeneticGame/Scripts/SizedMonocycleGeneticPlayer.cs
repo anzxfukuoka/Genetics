@@ -99,8 +99,7 @@ public class SizedMonocycleGeneticPlayer : GeneticPlayer
         
     }
 
-
-    protected override float ProcessStep(Sensors sensors, GeneticGame.Genom genom)
+    protected override float ProcessStep(Genom genom)
     {
         //
         forcePointMat.SetColor("_EmissionColor", Color.cyan);

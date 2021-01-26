@@ -76,7 +76,7 @@ public class MonocycleGeneticPlayer : GeneticPlayer
     }
 
     
-    protected override float ProcessStep(Sensors sensors, GeneticGame.Genom genom)
+    protected override float ProcessStep(Genom genom)
     {
         float scoreForStep = Time.deltaTime;
 

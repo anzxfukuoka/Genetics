@@ -3,57 +3,61 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameX : MonoBehaviour
+namespace old 
 {
-    private float score = 0;
-    private bool alive = true;
-
-    private static GameX instance;
-
-    public void Awake()
+    public class GameX : MonoBehaviour
     {
-        instance = this;
-    }
+        private float score = 0;
+        private bool alive = true;
 
-    public static GameX GetInstance()
-    {
-        return instance;
-    }
+        private static GameX instance;
 
-    void Start()
-    {
-        score = 0;
-        alive = true;
-
-        Time.timeScale = 1;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (alive) 
+        public void Awake()
         {
-            score += Time.deltaTime;
+            instance = this;
         }
-    }
 
-    public void GameOver()
-    {
-        Time.timeScale = 0.4f;
-        alive = false;
-    }
-
-    void OnGUI()
-    {   
-        GUI.Label(new Rect(200, 40, 200, 20), "Score: " + score);
-
-        if (!alive)
+        public static GameX GetInstance()
         {
-            if (GUI.Button(new Rect(200, 200, 80, 20), "Restart"))
+            return instance;
+        }
+
+        void Start()
+        {
+            score = 0;
+            alive = true;
+
+            Time.timeScale = 1;
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+            if (alive)
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); //reload 
+                score += Time.deltaTime;
             }
         }
+
+        public void GameOver()
+        {
+            Time.timeScale = 0.4f;
+            alive = false;
+        }
+
+        void OnGUI()
+        {
+            GUI.Label(new Rect(200, 40, 200, 20), "Score: " + score);
+
+            if (!alive)
+            {
+                if (GUI.Button(new Rect(200, 200, 80, 20), "Restart"))
+                {
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); //reload 
+                }
+            }
+        }
+
     }
 
 }

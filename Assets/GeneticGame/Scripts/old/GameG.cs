@@ -3,114 +3,117 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class GameG : MonoBehaviour
+namespace old 
 {
-    public int populationCount = 4;
-    public int maxGenerations = 100;
-
-    public Unit unitPrefab;
-
-    private float distance = 6f; // растояния между особями при спавне
-
-    private static GameG instance;
-
-    private int aliveCount;
-
-    private List<Unit> population;   
-    private int generation = 0;
-
-    public Genom bestGenom;
-    public float bestScore;
-
-    public void Awake()
+    public class GameG : MonoBehaviour
     {
-        instance = this;
-    }
+        public int populationCount = 4;
+        public int maxGenerations = 100;
 
-    public static void DecreaseAliveCount() 
-    {
-        if (instance.aliveCount > 0)
-            instance.aliveCount--;
+        public Unit unitPrefab;
 
-        //Debug.Log("alive count: " + instance.aliveCount);
-    }
+        private float distance = 6f; // растояния между особями при спавне
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        GenerateInitalPopulation();
-    }
+        private static GameG instance;
 
-    public void GenerateInitalPopulation() 
-    {
-        population = new List<Unit>();
-        aliveCount = populationCount;
+        private int aliveCount;
 
-        for (int i = 0; i < populationCount; i++) 
+        private List<Unit> population;
+        private int generation = 0;
+
+        public Genom bestGenom;
+        public float bestScore;
+
+        public void Awake()
         {
-            Unit unit = Instantiate(unitPrefab, Vector3.right * i * distance + Vector3.up * 2, new Quaternion());
-            unit.InitGenes();
-            population.Add(unit);
-        }
-    }
-
-    public void GenerateNextPopulation(List<Genom> genes) 
-    {
-        aliveCount = populationCount;
-
-        for (int i = 0; i < populationCount; i++)
-        {
-            Destroy(population[i].gameObject);
+            instance = this;
         }
 
-        for (int i = 0; i < populationCount; i++)
+        public static void DecreaseAliveCount()
         {
-            Unit unit = Instantiate(unitPrefab, Vector3.right * i * distance + Vector3.up * 2, new Quaternion());
-            unit.InitGenes(genes[i]);
+            if (instance.aliveCount > 0)
+                instance.aliveCount--;
 
-            population[i] = unit;
+            //Debug.Log("alive count: " + instance.aliveCount);
         }
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (aliveCount <= 0 && generation < maxGenerations) 
+        // Start is called before the first frame update
+        void Start()
         {
-            population.Sort((x, y) => (y.unitInfo.finalScore.CompareTo(x.unitInfo.finalScore)));
+            GenerateInitalPopulation();
+        }
 
-            Unit parent1 = population[0];
-            Unit parent2 = population[1];
+        public void GenerateInitalPopulation()
+        {
+            population = new List<Unit>();
+            aliveCount = populationCount;
 
-            Debug.Log("generation " + generation + " best \np1: " + parent1.unitInfo.finalScore + "\np2: " + parent2.unitInfo.finalScore);
-
-            if (bestScore < parent1.unitInfo.finalScore)
+            for (int i = 0; i < populationCount; i++)
             {
-                bestScore = parent1.unitInfo.finalScore;
-                bestGenom = parent1.genes;
+                Unit unit = Instantiate(unitPrefab, Vector3.right * i * distance + Vector3.up * 2, new Quaternion());
+                unit.InitGenes();
+                population.Add(unit);
+            }
+        }
+
+        public void GenerateNextPopulation(List<Genom> genes)
+        {
+            aliveCount = populationCount;
+
+            for (int i = 0; i < populationCount; i++)
+            {
+                Destroy(population[i].gameObject);
             }
 
-            Debug.Log("generation " + generation + " best \np1: " + parent1.unitInfo.finalScore + "\np2: " + parent2.unitInfo.finalScore + "\nglobal best score: " + bestScore);
+            for (int i = 0; i < populationCount; i++)
+            {
+                Unit unit = Instantiate(unitPrefab, Vector3.right * i * distance + Vector3.up * 2, new Quaternion());
+                unit.InitGenes(genes[i]);
 
-            List<Genom> childGenoms = Unit.GetChildsGenoms(parent1.genes, parent2.genes, populationCount);
-
-            GenerateNextPopulation(childGenoms);
-
-            generation++;
+                population[i] = unit;
+            }
         }
-    }
 
-    void OnGUI()
-    {
-        GUI.Box(new Rect(20, 20, 200, 60), "");
+        // Update is called once per frame
+        void Update()
+        {
+            if (aliveCount <= 0 && generation < maxGenerations)
+            {
+                population.Sort((x, y) => (y.unitInfo.finalScore.CompareTo(x.unitInfo.finalScore)));
 
-        GUI.Label(new Rect(40, 30, 200, 20), "generation: " + generation);
-        GUI.Label(new Rect(40, 50, 200, 20), "best time: " + bestScore);
+                Unit parent1 = population[0];
+                Unit parent2 = population[1];
 
-    }
+                Debug.Log("generation " + generation + " best \np1: " + parent1.unitInfo.finalScore + "\np2: " + parent2.unitInfo.finalScore);
 
-    public static GameG GetInstance()
-    {
-        return instance;
+                if (bestScore < parent1.unitInfo.finalScore)
+                {
+                    bestScore = parent1.unitInfo.finalScore;
+                    bestGenom = parent1.genes;
+                }
+
+                Debug.Log("generation " + generation + " best \np1: " + parent1.unitInfo.finalScore + "\np2: " + parent2.unitInfo.finalScore + "\nglobal best score: " + bestScore);
+
+                List<Genom> childGenoms = Unit.GetChildsGenoms(parent1.genes, parent2.genes, populationCount);
+
+                GenerateNextPopulation(childGenoms);
+
+                generation++;
+            }
+        }
+
+        void OnGUI()
+        {
+            GUI.Box(new Rect(20, 20, 200, 60), "");
+
+            GUI.Label(new Rect(40, 30, 200, 20), "generation: " + generation);
+            GUI.Label(new Rect(40, 50, 200, 20), "best time: " + bestScore);
+
+        }
+
+        public static GameG GetInstance()
+        {
+            return instance;
+        }
     }
 }

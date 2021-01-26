@@ -8,12 +8,12 @@ public class LoolAtAliveCamera : MonoBehaviour
 {
 
     public float cameraDistance = 10f;
-    
     public float cameraRotateSpeed = 100f;
-
     public float cameraFollowSpeed = 10f;
 
-    public Camera camera;
+    public bool showNextButton = true;
+
+    private Camera camera;
 
     private GeneticPlayer[] targets;
     private GeneticPlayer currTarget;
@@ -29,6 +29,7 @@ public class LoolAtAliveCamera : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        camera = GetComponentInChildren<Camera>();
         camera.transform.localPosition = Vector3.one * cameraDistance;
     }
 
@@ -84,9 +85,12 @@ public class LoolAtAliveCamera : MonoBehaviour
 
     void OnGUI()
     {
-        if (GUI.Button(new Rect(20, Screen.height - 40, 100, 20), "Next Alive")) 
+        if (showNextButton) 
         {
-            currTarget = findTarget(currtargetIndex + 1);
+            if (GUI.Button(new Rect(20, Screen.height - 40, 100, 20), "Next Alive"))
+            {
+                currTarget = findTarget(currtargetIndex + 1);
+            }
         }
     }
 }

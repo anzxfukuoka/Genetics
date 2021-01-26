@@ -1,0 +1,46 @@
+{
+   "gens_list":[
+      {
+         "name":"motor_torque",
+         "maxVal":1000.0,
+         "minVal":1.0,
+         "value":71.1953
+      },
+      {
+         "name":"max_speed",
+         "maxVal":6.0,
+         "minVal":1.0,
+         "value":5.975015
+      },
+      {
+         "name":"max_steer_angle",
+         "maxVal":60.0,
+         "minVal":1.0,
+         "value":32.03207
+      },
+      {
+         "name":"min_distance",
+         "maxVal":10.0,
+         "minVal":1.0,
+         "value":6.321496
+      },
+      {
+         "name":"view_radius",
+         "maxVal":2.0,
+         "minVal":0.6,
+         "value": 1.626852
+      },
+      {
+         "name":"wheel_rotating_speed",
+         "maxVal":2.0,
+         "minVal":0.6,
+         "value":1.841605
+      },
+      {
+         "name":"bubles_color",
+         "maxVal":1.0,
+         "minVal":0.0,
+         "value":0.8961257934570313
+      }
+   ]
+}

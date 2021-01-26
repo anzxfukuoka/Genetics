@@ -4,6 +4,20 @@ using UnityEngine;
 
 namespace GeneticGame 
 {
+    public enum SpawnAxes 
+    {
+        X,
+        Y,
+        Z
+    }
+
+    public enum SpawnDirection
+    {
+        DirectlyToAxes,
+        OppositeToAxes
+    }
+
+
     public class GeneticGame : MonoBehaviour
     {
         private static GeneticGame instance;
@@ -18,10 +32,16 @@ namespace GeneticGame
         public GeneticPlayer geneticPlayerPrefab;
 
         [Space(10)]
+        [Header("Spawn")]
 
         public Transform startSpawnPoint;
 
+        public SpawnAxes spawnAxes;
+        public SpawnDirection spawnDirection;
+
         public float spawnDistance = 6f; // растояния между особями при спавне
+
+        public Vector3 spawnRotation = new Vector3();
 
         [Space(10)]
 
@@ -47,6 +67,9 @@ namespace GeneticGame
 
         public static void DecreaseAliveCount()
         {
+            if (instance == null)
+                return;
+
             if (instance.aliveCount > 0)
                 instance.aliveCount--;
 
@@ -61,16 +84,51 @@ namespace GeneticGame
 
         public Vector3 GetPos(int i)
         {
-            Vector3 pos;
+            Vector3 startPos;
+
+            Vector3 axe;
+
+            float dir = 1;
 
             if (startSpawnPoint == null)
             {
-                pos = Vector3.right * i * spawnDistance + Vector3.up * 2;
+                startPos = Vector3.up * 2;
             }
             else
             {
-                pos = startSpawnPoint.position + Vector3.right * i * spawnDistance;
+                startPos = startSpawnPoint.position;
             }
+
+            switch (spawnAxes) 
+            {
+                case SpawnAxes.X:
+                    axe = Vector3.right;
+                    break;
+
+                case SpawnAxes.Y:
+                    axe = Vector3.up;
+                    break;
+
+                case SpawnAxes.Z:
+                    axe = Vector3.forward;
+                    break;
+
+                default:
+                    axe = Vector3.right;
+                    break;
+            }
+
+            switch (spawnDirection) 
+            {
+                case SpawnDirection.DirectlyToAxes:
+                    dir = 1;
+                    break;
+                case SpawnDirection.OppositeToAxes:
+                    dir = -1;
+                    break;
+            }
+
+            Vector3 pos = startPos + axe * dir * i * spawnDistance;
 
             return pos;
         }
@@ -84,16 +142,24 @@ namespace GeneticGame
             {
                 Vector3 pos = GetPos(i);
 
-                GeneticPlayer geneticPlayer = Instantiate(geneticPlayerPrefab, pos, new Quaternion());
+                GeneticPlayer geneticPlayer = Instantiate(geneticPlayerPrefab, pos, Quaternion.Euler(spawnRotation));
 
-                //Debug.Log("Instantiate geneticPlayerPrefab");
+                Genom genom;
 
-                Genom genom = geneticPlayer.InitGenom();
-                genom.RandomizeAll(); //случайные гены
+                if (geneticPlayerPrefab.mode == Mode.LoadAndTrain)
+                {
+                    genom = Genom.LoadFromFile(geneticPlayerPrefab.GetSavePath());
+                    
+                    if(i > 0)
+                        genom = Genom.MutateAll(genom, 0.01f);
+                }
+                else 
+                {
+                    genom = geneticPlayer.InitGenom();
+                    genom.RandomizeAll(); //случайные гены
+                }
                 
                 geneticPlayer.SetGenom(genom);
-
-                //Debug.Log("geneticPlayer.SetGenom(genom)");
 
                 population.Add(geneticPlayer);
             }
@@ -115,7 +181,7 @@ namespace GeneticGame
             {
                 Vector3 pos = GetPos(i);
 
-                GeneticPlayer geneticPlayer = Instantiate(geneticPlayerPrefab, pos, new Quaternion());
+                GeneticPlayer geneticPlayer = Instantiate(geneticPlayerPrefab, pos, Quaternion.Euler(spawnRotation));
 
                 geneticPlayer.SetGenom(childsGenes[i]);
 
@@ -141,6 +207,8 @@ namespace GeneticGame
                 {
                     bestScore = best.score;
                     bestGenom = best.GetGenom();
+
+                    Genom.SaveToFile(bestGenom, geneticPlayerPrefab.GetSavePath());
                 }
 
                 Debug.Log("global best score: " + bestScore);
@@ -158,7 +226,7 @@ namespace GeneticGame
                 foreach (GeneticPlayer p in population) 
                 {
                     // коосальная разница = 50%
-                    if (p.score > best.score * 0.5f)
+                    if (p.score >= best.score * 0.5f)
                         populationGenom.Add(p.GetGenom());
                 }
 
